@@ -46,8 +46,20 @@ cpdef str escape_set(set val, str charset, mapping: dict = None):
 cpdef str escape_bool(int value, mapping: dict = None):
     return str(int(value))
 
-cpdef str escape_int(long long value, mapping: dict = None):
+cdef extern from "limits.h":
+    cdef const long long LLONG_MAX, LLONG_MIN
+
+cpdef str escape_unsigned_int(unsigned long long value, mapping: dict = None):
     return str(value)
+
+cpdef str escape_signed_int(long long value, mapping: dict = None):
+    return str(value)
+
+cpdef str escape_int(value: int, mapping: dict = None):
+    if LLONG_MIN <= value and value <= LLONG_MAX:
+        return escape_signed_int(value, mapping)
+    else:
+        return escape_unsigned_int(value, mapping)
 
 cpdef str escape_float(double value, mapping: dict = None):
     s = repr(value)

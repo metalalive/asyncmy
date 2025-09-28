@@ -1,6 +1,7 @@
 import datetime
+import pytest
 
-from asyncmy.converters import escape_item, escape_str
+from asyncmy.converters import escape_item, escape_str, escape_int
 
 
 class CustomDate(datetime.date):
@@ -20,3 +21,17 @@ def test_escape_str():
     # so it should accept values that are not strings as well.
     assert escape_str(datetime.date(2023, 6, 2)) == "'2023-06-02'"
     assert escape_str(CustomDate(2023, 6, 2)) == "'2023-06-02'"
+
+
+def test_escape_int():
+    with pytest.raises(OverflowError):
+        assert escape_int(-pow(2, 63) - 1) == str(-pow(2, 63) - 1)
+
+    assert escape_int(-pow(2, 63)) == str(-pow(2, 63))
+    assert escape_int(-pow(2, 63) + 1) == str(-pow(2, 63) + 1)
+    assert escape_int(pow(2, 63) - 1) == str(pow(2, 63) - 1)
+    assert escape_int(pow(2, 63) + 1) == str(pow(2, 63) + 1)
+    assert escape_int(pow(2, 64) - 1) == str(pow(2, 64) - 1)
+
+    with pytest.raises(OverflowError):
+        assert escape_int(pow(2, 64)) == str(pow(2, 64))
